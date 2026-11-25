@@ -89,3 +89,41 @@ CREATE TABLE empleado (
     CONSTRAINT chk_empleado_email CHECK (email LIKE '%@%'),
     CONSTRAINT chk_empleado_cargo CHECK (cargo IN ('VENDEDOR', 'ADMINISTRADOR', 'AVALUADOR'))
 );
+
+-- ---------------------------------------------------------------------
+-- joya: pieza única del inventario. Su estado indica dónde está:
+--   DISPONIBLE (a la venta), VENDIDA, EMPENADA (en garantía de un
+--   préstamo) o DEVUELTA (el cliente saldó su empeño y la recuperó).
+-- id_proveedor es opcional: las joyas que llegan por un empeño no
+-- tienen proveedor.
+-- ---------------------------------------------------------------------
+CREATE TABLE joya (
+    id_joya        SERIAL,
+    codigo         VARCHAR(30)   NOT NULL,
+    nombre         VARCHAR(120)  NOT NULL,
+    id_categoria   INTEGER       NOT NULL,
+    id_material    INTEGER       NOT NULL,
+    id_proveedor   INTEGER,
+    peso_gramos    NUMERIC(8,2)  NOT NULL,
+    quilates       NUMERIC(6,2),
+    precio_compra  NUMERIC(12,2) NOT NULL,
+    precio_venta   NUMERIC(12,2) NOT NULL,
+    estado         VARCHAR(15)   NOT NULL DEFAULT 'DISPONIBLE',
+    fecha_ingreso  DATE          NOT NULL DEFAULT CURRENT_DATE,
+    CONSTRAINT pk_joya        PRIMARY KEY (id_joya),
+    CONSTRAINT uq_joya_codigo UNIQUE (codigo),
+    CONSTRAINT chk_joya_peso          CHECK (peso_gramos > 0),
+    CONSTRAINT chk_joya_quilates      CHECK (quilates IS NULL OR quilates > 0),
+    CONSTRAINT chk_joya_precio_compra CHECK (precio_compra >= 0),
+    CONSTRAINT chk_joya_precio_venta  CHECK (precio_venta >= 0),
+    CONSTRAINT chk_joya_estado        CHECK (estado IN ('DISPONIBLE', 'VENDIDA', 'EMPENADA', 'DEVUELTA')),
+    CONSTRAINT fk_joya_categoria FOREIGN KEY (id_categoria)
+        REFERENCES categoria (id_categoria) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_joya_material FOREIGN KEY (id_material)
+        REFERENCES material (id_material) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_joya_proveedor FOREIGN KEY (id_proveedor)
+        REFERENCES proveedor (id_proveedor) ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- Acelera las consultas por estado (inventario disponible, empeñadas...).
+CREATE INDEX idx_joya_estado ON joya (estado);
