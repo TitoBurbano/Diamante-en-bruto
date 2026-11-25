@@ -127,3 +127,47 @@ CREATE TABLE joya (
 
 -- Acelera las consultas por estado (inventario disponible, empeñadas...).
 CREATE INDEX idx_joya_estado ON joya (estado);
+
+
+-- ---------------------------------------------------------------------
+-- venta: cabecera de una venta de joyas a un cliente.
+-- descuento es un monto en pesos (no un porcentaje).
+-- Una venta ANULADA debe guardar el motivo de la anulación.
+-- ---------------------------------------------------------------------
+CREATE TABLE venta (
+    id_venta          SERIAL,
+    id_cliente        INTEGER       NOT NULL,
+    id_empleado       INTEGER       NOT NULL,
+    fecha             TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    descuento         NUMERIC(12,2) NOT NULL DEFAULT 0,
+    total             NUMERIC(12,2) NOT NULL,
+    estado            VARCHAR(15)   NOT NULL DEFAULT 'COMPLETADA',
+    motivo_anulacion  TEXT,
+    CONSTRAINT pk_venta PRIMARY KEY (id_venta),
+    CONSTRAINT chk_venta_descuento CHECK (descuento >= 0),
+    CONSTRAINT chk_venta_total     CHECK (total >= 0),
+    CONSTRAINT chk_venta_estado    CHECK (estado IN ('COMPLETADA', 'ANULADA')),
+    CONSTRAINT chk_venta_motivo    CHECK (estado <> 'ANULADA' OR motivo_anulacion IS NOT NULL),
+    CONSTRAINT fk_venta_cliente FOREIGN KEY (id_cliente)
+        REFERENCES cliente (id_cliente) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_venta_empleado FOREIGN KEY (id_empleado)
+        REFERENCES empleado (id_empleado) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- ---------------------------------------------------------------------
+-- detalle_venta: tabla intermedia N:M entre venta y joya.
+-- Guarda el precio al que se vendió cada pieza en ese momento.
+-- ---------------------------------------------------------------------
+CREATE TABLE detalle_venta (
+    id_detalle_venta  SERIAL,
+    id_venta          INTEGER       NOT NULL,
+    id_joya           INTEGER       NOT NULL,
+    precio_unitario   NUMERIC(12,2) NOT NULL,
+    CONSTRAINT pk_detalle_venta PRIMARY KEY (id_detalle_venta),
+    CONSTRAINT uq_detalle_venta_venta_joya UNIQUE (id_venta, id_joya),
+    CONSTRAINT chk_detalle_venta_precio CHECK (precio_unitario >= 0),
+    CONSTRAINT fk_detalle_venta_venta FOREIGN KEY (id_venta)
+        REFERENCES venta (id_venta) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_detalle_venta_joya FOREIGN KEY (id_joya)
+        REFERENCES joya (id_joya) ON DELETE RESTRICT ON UPDATE CASCADE
+);
