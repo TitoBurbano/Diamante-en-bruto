@@ -171,3 +171,91 @@ CREATE TABLE detalle_venta (
     CONSTRAINT fk_detalle_venta_joya FOREIGN KEY (id_joya)
         REFERENCES joya (id_joya) ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+-- ---------------------------------------------------------------------
+-- orden_compra: mercancía recibida de un proveedor.
+-- ---------------------------------------------------------------------
+CREATE TABLE orden_compra (
+    id_orden      SERIAL,
+    id_proveedor  INTEGER       NOT NULL,
+    id_empleado   INTEGER       NOT NULL,
+    fecha         DATE          NOT NULL DEFAULT CURRENT_DATE,
+    total         NUMERIC(12,2) NOT NULL,
+    CONSTRAINT pk_orden_compra PRIMARY KEY (id_orden),
+    CONSTRAINT chk_orden_compra_total CHECK (total >= 0),
+    CONSTRAINT fk_orden_compra_proveedor FOREIGN KEY (id_proveedor)
+        REFERENCES proveedor (id_proveedor) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_orden_compra_empleado FOREIGN KEY (id_empleado)
+        REFERENCES empleado (id_empleado) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- ---------------------------------------------------------------------
+-- detalle_orden_compra: joyas recibidas en cada orden y su costo.
+-- Una joya llega en una sola orden (uq_detalle_orden_joya).
+-- ---------------------------------------------------------------------
+CREATE TABLE detalle_orden_compra (
+    id_detalle_orden  SERIAL,
+    id_orden          INTEGER       NOT NULL,
+    id_joya           INTEGER       NOT NULL,
+    costo             NUMERIC(12,2) NOT NULL,
+    CONSTRAINT pk_detalle_orden_compra PRIMARY KEY (id_detalle_orden),
+    CONSTRAINT uq_detalle_orden_joya   UNIQUE (id_joya),
+    CONSTRAINT chk_detalle_orden_costo CHECK (costo >= 0),
+    CONSTRAINT fk_detalle_orden_orden FOREIGN KEY (id_orden)
+        REFERENCES orden_compra (id_orden) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_detalle_orden_joya FOREIGN KEY (id_joya)
+        REFERENCES joya (id_joya) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- ---------------------------------------------------------------------
+-- empeno: préstamo de dinero con una joya como garantía.
+--   tasa_interes: porcentaje mensual.
+--   ACTIVO  -> vigente, sin fecha de cierre.
+--   SALDADO -> el cliente pagó (monto_pagado obligatorio).
+--   VENCIDO -> no pagó a tiempo; la joya pasa a la tienda.
+-- ---------------------------------------------------------------------
+CREATE TABLE empeno (
+    id_empeno          SERIAL,
+    id_cliente         INTEGER       NOT NULL,
+    id_joya            INTEGER       NOT NULL,
+    id_empleado        INTEGER       NOT NULL,
+    monto_prestamo     NUMERIC(12,2) NOT NULL,
+    tasa_interes       NUMERIC(5,2)  NOT NULL DEFAULT 5.00,
+    fecha_inicio       DATE          NOT NULL DEFAULT CURRENT_DATE,
+    fecha_vencimiento  DATE          NOT NULL,
+    estado             VARCHAR(15)   NOT NULL DEFAULT 'ACTIVO',
+    fecha_cierre       DATE,
+    monto_pagado       NUMERIC(12,2),
+    CONSTRAINT pk_empeno PRIMARY KEY (id_empeno),
+    CONSTRAINT chk_empeno_monto   CHECK (monto_prestamo > 0),
+    CONSTRAINT chk_empeno_tasa    CHECK (tasa_interes >= 0 AND tasa_interes <= 100),
+    CONSTRAINT chk_empeno_fechas  CHECK (fecha_vencimiento > fecha_inicio),
+    CONSTRAINT chk_empeno_estado  CHECK (estado IN ('ACTIVO', 'SALDADO', 'VENCIDO')),
+    CONSTRAINT chk_empeno_cierre  CHECK (
+        (estado = 'ACTIVO'  AND fecha_cierre IS NULL) OR
+        (estado <> 'ACTIVO' AND fecha_cierre IS NOT NULL)),
+    CONSTRAINT chk_empeno_pago    CHECK (estado <> 'SALDADO' OR monto_pagado IS NOT NULL),
+    CONSTRAINT chk_empeno_pagado  CHECK (monto_pagado IS NULL OR monto_pagado >= 0),
+    CONSTRAINT fk_empeno_cliente FOREIGN KEY (id_cliente)
+        REFERENCES cliente (id_cliente) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_empeno_joya FOREIGN KEY (id_joya)
+        REFERENCES joya (id_joya) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_empeno_empleado FOREIGN KEY (id_empleado)
+        REFERENCES empleado (id_empleado) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- Regla: una joya no puede tener dos empeños activos al mismo tiempo.
+CREATE UNIQUE INDEX uq_empeno_joya_activo ON empeno (id_joya) WHERE estado = 'ACTIVO';
+
+-- =====================================================================
+-- Resumen de decisiones ON DELETE (todas con ON UPDATE CASCADE)
+--   RESTRICT : joya -> categoria, material; venta -> cliente, empleado;
+--              detalle_venta -> joya; orden_compra -> proveedor, empleado;
+--              detalle_orden_compra -> joya; empeno -> cliente, joya,
+--              empleado. Son registros históricos o contables que no
+--              deben quedar huérfanos.
+--   CASCADE  : detalle_venta -> venta; detalle_orden_compra -> orden.
+--              El detalle no tiene sentido sin su cabecera.
+--   SET NULL : joya -> proveedor. La pieza sigue existiendo aunque se
+--              elimine el proveedor que la surtió.
+-- =====================================================================
