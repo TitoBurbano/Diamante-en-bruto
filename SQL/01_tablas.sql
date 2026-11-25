@@ -57,3 +57,35 @@ CREATE TABLE proveedor (
     CONSTRAINT uq_proveedor_email UNIQUE (email),
     CONSTRAINT chk_proveedor_email CHECK (email LIKE '%@%')
 );
+
+-- ---------------------------------------------------------------------
+-- cliente: compradores y personas que piden préstamos (empeños)
+-- ---------------------------------------------------------------------
+CREATE TABLE cliente (
+    id_cliente      SERIAL,
+    documento       VARCHAR(20)  NOT NULL,
+    nombre          VARCHAR(120) NOT NULL,
+    telefono        VARCHAR(20),
+    email           VARCHAR(150),
+    es_vip          BOOLEAN      NOT NULL DEFAULT FALSE,
+    fecha_registro  DATE         NOT NULL DEFAULT CURRENT_DATE,
+    CONSTRAINT pk_cliente           PRIMARY KEY (id_cliente),
+    CONSTRAINT uq_cliente_documento UNIQUE (documento),
+    CONSTRAINT uq_cliente_email     UNIQUE (email),
+    CONSTRAINT chk_cliente_email    CHECK (email LIKE '%@%')
+);
+
+-- ---------------------------------------------------------------------
+-- empleado: personal que atiende ventas, compras y empeños
+-- ---------------------------------------------------------------------
+CREATE TABLE empleado (
+    id_empleado  SERIAL,
+    nombre       VARCHAR(120) NOT NULL,
+    cargo        VARCHAR(30)  NOT NULL,
+    email        VARCHAR(150) NOT NULL,
+    activo       BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT pk_empleado       PRIMARY KEY (id_empleado),
+    CONSTRAINT uq_empleado_email UNIQUE (email),
+    CONSTRAINT chk_empleado_email CHECK (email LIKE '%@%'),
+    CONSTRAINT chk_empleado_cargo CHECK (cargo IN ('VENDEDOR', 'ADMINISTRADOR', 'AVALUADOR'))
+);
