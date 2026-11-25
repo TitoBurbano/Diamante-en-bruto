@@ -49,3 +49,25 @@ INSERT INTO empleado (nombre, cargo, email, activo) VALUES
 ('Julián David Moreno',    'VENDEDOR',      'julian.moreno@diamanteenbruto.co',   TRUE),
 ('Natalia Cárdenas Ortiz', 'AVALUADOR',     'natalia.cardenas@diamanteenbruto.co', TRUE),
 ('Esteban Ruiz Parra',     'VENDEDOR',      'esteban.ruiz@diamanteenbruto.co',    FALSE);
+
+-- Joyas 1-13: llegan por órdenes de compra de proveedores.
+-- Joyas 14-18: llegan por empeños (sin proveedor, precio_compra = préstamo).
+INSERT INTO joya (codigo, nombre, id_categoria, id_material, id_proveedor, peso_gramos, quilates, precio_compra, precio_venta, estado, fecha_ingreso) VALUES
+('DIA-AN-001', 'Anillo solitario diamante 1 ct',          1, 5, 1,    4.20, 1.00,  9000000, 13500000, 'VENDIDA',    CURRENT_DATE - 60),
+('DIA-PE-002', 'Pendientes diamante 0.5 ct',              4, 2, 1,    3.10, 0.50,  4200000,  6300000, 'DISPONIBLE', CURRENT_DATE - 60),
+('DIA-CO-003', 'Collar diamantes en cascada',             2, 2, 1,   12.50, 2.30, 15000000, 22000000, 'DISPONIBLE', CURRENT_DATE - 60),
+('OPA-GE-004', 'Ópalo negro de Etiopía 3.2 ct',           6, 6, 2,    0.64, 3.20,  7000000, 12000000, 'DISPONIBLE', CURRENT_DATE - 50),
+('OPA-AN-005', 'Anillo ópalo negro engastado',            1, 1, 2,    5.80, 2.10,  5500000,  9000000, 'VENDIDA',    CURRENT_DATE - 50),
+('ORO-AN-006', 'Argolla de matrimonio oro 18k',           1, 1, 3,    6.00, NULL,  1800000,  2600000, 'VENDIDA',    CURRENT_DATE - 40),
+('ORO-CO-007', 'Cadena cubana oro 18k',                   2, 1, 3,   25.00, NULL,  7500000, 10500000, 'DISPONIBLE', CURRENT_DATE - 40),
+('ORO-PU-008', 'Pulsera de eslabones oro rosado 14k',     3, 3, 3,   14.20, NULL,  3800000,  5400000, 'DISPONIBLE', CURRENT_DATE - 40),
+('PLA-PU-009', 'Pulsera de plata 925',                    3, 4, 3,   18.00, NULL,   350000,   620000, 'VENDIDA',    CURRENT_DATE - 40),
+('REL-AU-010', 'Reloj suizo automático acero y oro',      5, 1, 4,   95.00, NULL,  8000000, 12500000, 'DISPONIBLE', CURRENT_DATE - 30),
+('REL-BO-011', 'Reloj de bolsillo antiguo',               5, 4, 4,   70.00, NULL,  2200000,  3900000, 'DISPONIBLE', CURRENT_DATE - 30),
+('PLA-PE-012', 'Pendientes de plata filigrana',           4, 4, 5,    5.50, NULL,   180000,   380000, 'VENDIDA',    CURRENT_DATE - 20),
+('PLA-CO-013', 'Collar de plata con dije',                2, 4, 5,    9.80, NULL,   260000,   480000, 'VENDIDA',    CURRENT_DATE - 20),
+('EMP-014',    'Anillo diamante 0.8 ct (empeño)',         1, 2, NULL, 3.90, 0.80,  4000000,  8000000, 'EMPENADA',   CURRENT_DATE - 15),
+('EMP-015',    'Reloj de oro 18k (empeño)',               5, 1, NULL, 80.00, NULL, 3000000,  6000000, 'EMPENADA',   CURRENT_DATE - 65),
+('EMP-016',    'Collar de oro 18k (empeño)',              2, 1, NULL, 20.00, NULL, 1500000,  5000000, 'DEVUELTA',   CURRENT_DATE - 90),
+('EMP-017',    'Pulsera de oro blanco (empeño)',          3, 2, NULL, 11.00, NULL, 1800000,  3600000, 'DISPONIBLE', CURRENT_DATE - 120),
+('EMP-018',    'Anillo de oro rosado (empeño)',           1, 3, NULL,  4.50, NULL,  900000,  1800000, 'EMPENADA',   CURRENT_DATE - 5);
