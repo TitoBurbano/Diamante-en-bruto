@@ -1,5 +1,5 @@
 """Modelos Pydantic: validan lo que entra a la API y describen lo que sale."""
-from datetime import date
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -125,3 +125,29 @@ class JoyaSobrePromedio(BaseModel):
     joya: str
     categoria: str
     precio_venta: float
+
+
+
+# -------------------------------------------------------------------- Ventas
+class DetalleVenta(BaseModel):
+    id_joya: int
+    codigo: str
+    joya: str
+    precio_unitario: float
+
+
+class Venta(BaseModel):
+    id_venta: int
+    id_cliente: int
+    cliente: str
+    id_empleado: int
+    empleado: str
+    fecha: datetime
+    descuento: float
+    total: float
+    estado: str
+    motivo_anulacion: str | None
+
+
+class VentaDetallada(Venta):
+    detalle: list[DetalleVenta]
