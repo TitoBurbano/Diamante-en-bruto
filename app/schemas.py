@@ -148,6 +148,10 @@ class Venta(BaseModel):
     estado: str
     motivo_anulacion: str | None
 
-
 class VentaDetallada(Venta):
     detalle: list[DetalleVenta]
+
+class VentaCrear(BaseModel):
+    id_cliente: int
+    id_empleado: int
+    ids_joyas: list[int] = Field(min_length=1)

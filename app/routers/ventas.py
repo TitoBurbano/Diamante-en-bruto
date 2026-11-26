@@ -51,3 +51,60 @@ def obtener_venta(id_venta: int):
     if venta is None:
         raise HTTPException(status_code=404, detail="Venta no encontrada")
     return venta
+
+
+
+@router.post("", response_model=schemas.VentaDetallada, status_code=201)
+def registrar_venta(datos: schemas.VentaCrear):
+    """Funcionalidad 1: registrar una venta (transacción atómica).
+
+    Todo ocurre dentro de UNA transacción: la cabecera de la venta, cada joya
+    marcada como VENDIDA y cada línea del detalle. Si cualquier joya no está
+    disponible, se lanza una excepción y PostgreSQL deshace TODO (ROLLBACK):
+    no queda ni la venta ni ninguna joya a medias."""
+    if len(set(datos.ids_joyas)) != len(datos.ids_joyas):
+        raise HTTPException(status_code=422, detail="La lista de joyas tiene ids repetidos")
+
+    with db.pool.connection() as conn:
+        cliente = exigir_cliente(conn, datos.id_cliente)
+        exigir_empleado_activo(conn, datos.id_empleado)
+
+        id_venta = conn.execute(
+            "INSERT INTO venta (id_cliente, id_empleado, descuento, total) "
+            "VALUES (%s, %s, 0, 0) RETURNING id_venta",
+            (datos.id_cliente, datos.id_empleado),
+        ).fetchone()["id_venta"]
+
+        subtotal = Decimal("0")
+        for id_joya in datos.ids_joyas:
+            # UPDATE condicional: solo cambia la joya si sigue DISPONIBLE. Es atómico,
+            # así dos ventas simultáneas no pueden vender la misma pieza.
+            joya = conn.execute(
+                "UPDATE joya SET estado = 'VENDIDA' "
+                "WHERE id_joya = %s AND estado = 'DISPONIBLE' RETURNING precio_venta",
+                (id_joya,),
+            ).fetchone()
+            if joya is None:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"La joya {id_joya} no existe o no está disponible; "
+                           f"no se registró la venta",
+                )
+            conn.execute(
+                "INSERT INTO detalle_venta (id_venta, id_joya, precio_unitario) "
+                "VALUES (%s, %s, %s)",
+                (id_venta, id_joya, joya["precio_venta"]),
+            )
+            subtotal += joya["precio_venta"]
+
+        if cliente["es_vip"]:
+            descuento = (subtotal * DESCUENTO_VIP).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+        else:
+            descuento = Decimal("0.00")
+        conn.execute(
+            "UPDATE venta SET descuento = %s, total = %s WHERE id_venta = %s",
+            (descuento, subtotal - descuento, id_venta),
+        )
+        return _venta_con_detalle(conn, id_venta)
