@@ -88,3 +88,19 @@ class JoyaCrear(BaseModel):
 class Joya(JoyaCrear):
     id_joya: int
     fecha_ingreso: date
+
+
+
+# ------------------------------------------------------------------ Reportes
+class InventarioItem(BaseModel):
+    id_joya: int
+    codigo: str
+    joya: str
+    categoria: str
+    material: str
+    pureza: str
+    peso_gramos: float
+    quilates: float | None
+    precio_venta: float
+    proveedor: str | None
+    fecha_ingreso: date
