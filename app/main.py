@@ -4,9 +4,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app import db
-from app.errors import registrar_manejadores
-# ---- IMPORTS DE ROUTERS ----
 
+# ---- IMPORTS DE ROUTERS ----
+from app.errors import registrar_manejadores
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,7 +23,8 @@ app = FastAPI(
 )
 registrar_manejadores(app)
 # ---- REGISTRO DE ROUTERS ----
-
+from app.routers import categorias
+app.include_router(categorias.router)
 
 @app.get("/salud", tags=["Sistema"])
 def salud():
