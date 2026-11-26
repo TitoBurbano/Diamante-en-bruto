@@ -7,6 +7,8 @@ from app import db
 
 # ---- IMPORTS DE ROUTERS ----
 from app.errors import registrar_manejadores
+from app.routers import categorias
+from app.routers import materiales
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,8 +25,8 @@ app = FastAPI(
 )
 registrar_manejadores(app)
 # ---- REGISTRO DE ROUTERS ----
-from app.routers import categorias
 app.include_router(categorias.router)
+app.include_router(materiales.router)
 
 @app.get("/salud", tags=["Sistema"])
 def salud():
