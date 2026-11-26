@@ -118,3 +118,10 @@ class EmpenoActivo(BaseModel):
     fecha_vencimiento: date
     dias_para_vencer: int
     empleado: str
+
+class JoyaSobrePromedio(BaseModel):
+    id_joya: int
+    codigo: str
+    joya: str
+    categoria: str
+    precio_venta: float
