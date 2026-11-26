@@ -211,8 +211,8 @@ Cada entidad tiene los 5 endpoints: lista, detalle, creación, actualización y 
 |---|---|---|
 | GET | `/reportes/inventario` | Joyas disponibles con categoría, material y proveedor (usa `vista_inventario_disponible`) |
 | GET | `/reportes/empenos-activos` | Empeños activos con cliente, joya y días para vencer (usa `vista_empenos_activos`) |
-| GET | `/reportes/joyas-sobre-promedio` | Joyas disponibles con precio de venta mayor al promedio (subconsulta en `WHERE`) |
-| GET | `/reportes/clientes-sin-compras` | Clientes que nunca han comprado (subconsulta con `NOT EXISTS`) |
+| GET | `/reportes/joyas-sobre-promedio` | Joyas disponibles con precio de venta mayor al promedio de las disponibles (subconsulta escalar en `WHERE`) |
+| GET | `/reportes/clientes-sin-compras` | Clientes sin ninguna venta completada; las anuladas no cuentan (subconsulta con `NOT EXISTS`) |
 
 ## Requerimientos funcionales
 
