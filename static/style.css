@@ -1,0 +1,56 @@
+:root {
+  --fondo: #faf8f4; --tarjeta: #ffffff; --texto: #1f1a14; --borde: #ddd5c6;
+  --oro: #b8860b; --ok: #1b7a43; --error: #b42318; --suave: #f3eee3;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #17140f; --tarjeta: #221e17; --texto: #f1ebe0; --borde: #3a3328;
+    --oro: #e0b84a; --ok: #58c98a; --error: #ff8a80; --suave: #2b261d;
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+       background: var(--fondo); color: var(--texto); }
+header { padding: 12px 20px; background: var(--tarjeta); border-bottom: 2px solid var(--oro); }
+h1 { margin: 0 0 10px; font-size: 1.3rem; }
+h1 small { font-weight: normal; font-size: .8rem; opacity: .7; margin-left: 8px; }
+h2 { margin-top: 0; }
+nav { display: flex; flex-wrap: wrap; gap: 6px; }
+main { padding: 16px 20px 40px; max-width: 1200px; margin: 0 auto; }
+
+button { font: inherit; padding: 6px 12px; border: 1px solid var(--borde); border-radius: 6px;
+         background: var(--tarjeta); color: var(--texto); cursor: pointer; }
+button:hover { border-color: var(--oro); }
+nav button.activo { background: var(--oro); border-color: var(--oro); color: #fff; }
+button.primario { background: var(--oro); border-color: var(--oro); color: #fff; }
+button.peligro { color: var(--error); }
+
+#mensaje { margin: 12px 20px 0; padding: 10px 14px; border-radius: 6px; border: 1px solid; font-weight: 500; }
+#mensaje.ok { color: var(--ok); border-color: var(--ok); background: var(--suave); }
+#mensaje.error { color: var(--error); border-color: var(--error); background: var(--suave); }
+
+.form { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 8px;
+        padding: 14px; margin-bottom: 18px; }
+.form h3 { margin: 0 0 10px; font-size: 1rem; }
+.campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+label { display: flex; flex-direction: column; gap: 3px; font-size: .85rem; }
+label.check { flex-direction: row; align-items: center; gap: 6px; }
+input, select { font: inherit; padding: 6px 8px; border: 1px solid var(--borde); border-radius: 6px;
+                background: var(--fondo); color: var(--texto); }
+.botones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+.tabla-wrap { overflow-x: auto; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+th { background: var(--suave); text-transform: capitalize; }
+td.acciones { display: flex; gap: 6px; }
+.vacio, .resumen { opacity: .7; }
+details { margin-bottom: 16px; }
+summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+.filtro { flex-direction: row; align-items: center; gap: 8px; margin-bottom: 10px; }
+
+.estado { padding: 2px 8px; border-radius: 10px; font-size: .78rem; border: 1px solid var(--borde); }
+.estado.DISPONIBLE, .estado.COMPLETADA, .estado.SALDADO { color: var(--ok); border-color: var(--ok); }
+.estado.VENDIDA, .estado.ANULADA, .estado.VENCIDO { color: var(--error); border-color: var(--error); }
+.estado.EMPENADA, .estado.ACTIVO, .estado.DEVUELTA { color: var(--oro); border-color: var(--oro); }

@@ -1,22 +1,18 @@
 """Punto de entrada de la API de la joyería Diamante en Bruto."""
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app import db
-
-# ---- IMPORTS DE ROUTERS ----
 from app.errors import registrar_manejadores
-from app.routers import categorias
-from app.routers import materiales
-from app.routers import proveedores
-from app.routers import clientes
-from app.routers import empleados
-from app.routers import joyas
-from app.routers import reportes
-from app.routers import ventas
-from app.routers import ordenes_compra
-from app.routers import empenos
+from app.routers import categorias, clientes, empenos, empleados, joyas
+from app.routers import materiales, ordenes_compra, proveedores, reportes, ventas
+
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,18 +27,21 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
 registrar_manejadores(app)
-# ---- REGISTRO DE ROUTERS ----
-app.include_router(categorias.router)
-app.include_router(materiales.router)
-app.include_router(proveedores.router)
-app.include_router(clientes.router)
-app.include_router(empleados.router)
-app.include_router(joyas.router)
-app.include_router(reportes.router)
-app.include_router(ventas.router)
-app.include_router(ordenes_compra.router)
-app.include_router(empenos.router)
+
+for modulo in (categorias, materiales, proveedores, clientes, empleados, joyas,
+               reportes, ventas, ordenes_compra, empenos):
+    app.include_router(modulo.router)
+
+# Interfaz web: archivos estáticos en /static y la página principal en /
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def inicio():
+    return FileResponse(STATIC_DIR / "index.html")
+
 
 @app.get("/salud", tags=["Sistema"])
 def salud():

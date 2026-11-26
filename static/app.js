@@ -1,0 +1,1 @@
+document.getElementById("vista").textContent = "provisional";
