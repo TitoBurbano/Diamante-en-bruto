@@ -43,3 +43,25 @@ def reporte_joyas_sobre_promedio():
             ORDER BY j.precio_venta DESC
             """
         ).fetchall()
+
+
+@router.get("/clientes-sin-compras", response_model=list[schemas.Cliente])
+def reporte_clientes_sin_compras():
+    """Clientes que nunca han completado una compra.
+
+    Subconsulta correlacionada con NOT EXISTS: para cada cliente busca si existe
+    al menos una venta COMPLETADA suya; si no existe, el cliente aparece.
+    Las ventas anuladas no cuentan como compra."""
+    with db.pool.connection() as conn:
+        return conn.execute(
+            """
+            SELECT c.id_cliente, c.documento, c.nombre, c.telefono,
+                   c.email, c.es_vip, c.fecha_registro
+            FROM cliente c
+            WHERE NOT EXISTS (
+                SELECT 1 FROM venta v
+                WHERE v.id_cliente = c.id_cliente AND v.estado = 'COMPLETADA'
+            )
+            ORDER BY c.id_cliente
+            """
+        ).fetchall()
