@@ -51,3 +51,16 @@ class ClienteCrear(BaseModel):
 class Cliente(ClienteCrear):
     id_cliente: int
     fecha_registro: date
+
+
+
+# ----------------------------------------------------------------- Empleados
+class EmpleadoCrear(BaseModel):
+    nombre: str = Field(min_length=1, max_length=120)
+    cargo: Literal["VENDEDOR", "ADMINISTRADOR", "AVALUADOR"]
+    email: str = Field(max_length=150, pattern=EMAIL)
+    activo: bool = True
+
+
+class Empleado(EmpleadoCrear):
+    id_empleado: int
