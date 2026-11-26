@@ -104,3 +104,17 @@ class InventarioItem(BaseModel):
     precio_venta: float
     proveedor: str | None
     fecha_ingreso: date
+
+class EmpenoActivo(BaseModel):
+    id_empeno: int
+    cliente: str
+    documento: str
+    telefono: str | None
+    codigo_joya: str
+    joya: str
+    monto_prestamo: float
+    tasa_interes: float
+    fecha_inicio: date
+    fecha_vencimiento: date
+    dias_para_vencer: int
+    empleado: str

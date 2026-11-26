@@ -13,3 +13,12 @@ def reporte_inventario():
         return conn.execute(
             "SELECT * FROM vista_inventario_disponible ORDER BY id_joya"
         ).fetchall()
+
+@router.get("/empenos-activos", response_model=list[schemas.EmpenoActivo])
+def reporte_empenos_activos():
+    """Empeños vigentes con cliente, joya y días para vencer (vista_empenos_activos).
+    Un número negativo en dias_para_vencer indica que el empeño ya venció."""
+    with db.pool.connection() as conn:
+        return conn.execute(
+            "SELECT * FROM vista_empenos_activos ORDER BY dias_para_vencer"
+        ).fetchall()
