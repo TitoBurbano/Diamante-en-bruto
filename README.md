@@ -171,12 +171,17 @@ erDiagram
 
 ## Endpoints
 
+### Sistema
+| Método | URL | Descripción | Códigos |
+|---|---|---|---|
+| GET | `/salud` | Verifica que la API y la base de datos responden | 200 |
+
 ### CRUD de entidades
 Cada entidad tiene los 5 endpoints: lista, detalle, creación, actualización y eliminación.
 
 | Método | URL | Descripción | Códigos |
 |---|---|---|---|
-| GET | `/joyas` | Lista todas las joyas | 200 |
+| GET | `/joyas` | Lista las joyas (filtro opcional `?estado=DISPONIBLE`) | 200 |
 | GET | `/joyas/{id}` | Retorna una joya por id | 200, 404 |
 | POST | `/joyas` | Crea una joya | 201, 422 |
 | PUT | `/joyas/{id}` | Actualiza una joya | 200, 404 |
