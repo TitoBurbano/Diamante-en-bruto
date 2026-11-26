@@ -64,3 +64,27 @@ class EmpleadoCrear(BaseModel):
 
 class Empleado(EmpleadoCrear):
     id_empleado: int
+
+
+
+# --------------------------------------------------------------------- Joyas
+EstadoJoya = Literal["DISPONIBLE", "VENDIDA", "EMPENADA", "DEVUELTA"]
+
+
+class JoyaCrear(BaseModel):
+    codigo: str = Field(min_length=1, max_length=30)
+    nombre: str = Field(min_length=1, max_length=120)
+    id_categoria: int
+    id_material: int
+    id_proveedor: int | None = None
+    peso_gramos: float = Field(gt=0)
+    quilates: float | None = Field(default=None, gt=0)
+    precio_compra: float = Field(ge=0)
+    precio_venta: float = Field(ge=0)
+    estado: EstadoJoya = "DISPONIBLE"
+    fecha_ingreso: date | None = None
+
+
+class Joya(JoyaCrear):
+    id_joya: int
+    fecha_ingreso: date
