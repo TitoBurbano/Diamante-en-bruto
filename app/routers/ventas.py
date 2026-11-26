@@ -108,3 +108,28 @@ def registrar_venta(datos: schemas.VentaCrear):
             (descuento, subtotal - descuento, id_venta),
         )
         return _venta_con_detalle(conn, id_venta)
+
+@router.post("/{id_venta}/anular", response_model=schemas.VentaDetallada)
+def anular_venta(id_venta: int, datos: schemas.AnulacionVenta):
+    """Funcionalidad 5: anular una venta y devolver sus joyas al inventario."""
+    with db.pool.connection() as conn:
+        # FOR UPDATE bloquea la fila para que nadie la modifique mientras se anula.
+        venta = conn.execute(
+            "SELECT estado FROM venta WHERE id_venta = %s FOR UPDATE", (id_venta,)
+        ).fetchone()
+        if venta is None:
+            raise HTTPException(status_code=404, detail="Venta no encontrada")
+        if venta["estado"] == "ANULADA":
+            raise HTTPException(status_code=409, detail="La venta ya está anulada")
+
+        conn.execute(
+            "UPDATE venta SET estado = 'ANULADA', motivo_anulacion = %s WHERE id_venta = %s",
+            (datos.motivo, id_venta),
+        )
+        conn.execute(
+            "UPDATE joya SET estado = 'DISPONIBLE' "
+            "WHERE estado = 'VENDIDA' "
+            "AND id_joya IN (SELECT id_joya FROM detalle_venta WHERE id_venta = %s)",
+            (id_venta,),
+        )
+        return _venta_con_detalle(conn, id_venta)

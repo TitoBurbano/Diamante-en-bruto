@@ -155,3 +155,6 @@ class VentaCrear(BaseModel):
     id_cliente: int
     id_empleado: int
     ids_joyas: list[int] = Field(min_length=1)
+
+class AnulacionVenta(BaseModel):
+    motivo: str = Field(min_length=5, max_length=300)
