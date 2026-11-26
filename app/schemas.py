@@ -36,3 +36,18 @@ class ProveedorCrear(BaseModel):
 
 class Proveedor(ProveedorCrear):
     id_proveedor: int    
+
+
+
+# ------------------------------------------------------------------ Clientes
+class ClienteCrear(BaseModel):
+    documento: str = Field(min_length=1, max_length=20)
+    nombre: str = Field(min_length=1, max_length=120)
+    telefono: str | None = Field(default=None, max_length=20)
+    email: str | None = Field(default=None, max_length=150, pattern=EMAIL)
+    es_vip: bool = False
+
+
+class Cliente(ClienteCrear):
+    id_cliente: int
+    fecha_registro: date
