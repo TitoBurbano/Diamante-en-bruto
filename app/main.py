@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app import db
+from app.errors import registrar_manejadores
 # ---- IMPORTS DE ROUTERS ----
 
 
@@ -20,7 +21,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
-
+registrar_manejadores(app)
 # ---- REGISTRO DE ROUTERS ----
 
 
