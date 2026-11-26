@@ -22,3 +22,17 @@ class Material(BaseModel):
     id_material: int
     nombre: str
     pureza: str
+
+
+
+# --------------------------------------------------------------- Proveedores
+class ProveedorCrear(BaseModel):
+    nombre: str = Field(min_length=1, max_length=120)
+    nit: str = Field(min_length=1, max_length=20)
+    telefono: str | None = Field(default=None, max_length=20)
+    email: str | None = Field(default=None, max_length=150, pattern=EMAIL)
+    ciudad: str | None = Field(default=None, max_length=80)
+
+
+class Proveedor(ProveedorCrear):
+    id_proveedor: int    
