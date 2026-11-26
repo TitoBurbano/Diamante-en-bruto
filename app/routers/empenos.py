@@ -121,3 +121,43 @@ def saldar_empeno(id_empeno: int):
                 detail="La joya del empeño no está en estado EMPENADA; operación cancelada",
             )
         return _empeno(conn, id_empeno)
+
+
+@router.post("/{id_empeno}/vencer", response_model=schemas.Empeno)
+def vencer_empeno(id_empeno: int):
+    """Funcionalidad 6: marcar un empeño como VENCIDO (transacción atómica).
+
+    Solo si está ACTIVO y su fecha de vencimiento ya pasó. La joya queda
+    DISPONIBLE para venderse en la tienda."""
+    with db.pool.connection() as conn:
+        e = conn.execute(
+            "SELECT id_joya, estado, fecha_vencimiento, "
+            "(fecha_vencimiento < CURRENT_DATE) AS vencido "
+            "FROM empeno WHERE id_empeno = %s FOR UPDATE",
+            (id_empeno,),
+        ).fetchone()
+        if e is None:
+            raise HTTPException(status_code=404, detail="Empeño no encontrado")
+        if e["estado"] != "ACTIVO":
+            raise HTTPException(status_code=409, detail=f"El empeño ya está {e['estado']}")
+        if not e["vencido"]:
+            raise HTTPException(
+                status_code=409,
+                detail=f"El empeño aún no vence (vence el {e['fecha_vencimiento']})",
+            )
+
+        conn.execute(
+            "UPDATE empeno SET estado = 'VENCIDO', fecha_cierre = CURRENT_DATE "
+            "WHERE id_empeno = %s",
+            (id_empeno,),
+        )
+        liberada = conn.execute(
+            "UPDATE joya SET estado = 'DISPONIBLE' WHERE id_joya = %s AND estado = 'EMPENADA'",
+            (e["id_joya"],),
+        )
+        if liberada.rowcount == 0:
+            raise HTTPException(
+                status_code=409,
+                detail="La joya del empeño no está en estado EMPENADA; operación cancelada",
+            )
+        return _empeno(conn, id_empeno)
