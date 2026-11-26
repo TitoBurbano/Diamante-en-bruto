@@ -158,3 +158,42 @@ class VentaCrear(BaseModel):
 
 class AnulacionVenta(BaseModel):
     motivo: str = Field(min_length=5, max_length=300)
+
+
+# ------------------------------------------------------------ Órdenes de compra
+class JoyaRecibida(BaseModel):
+    codigo: str = Field(min_length=1, max_length=30)
+    nombre: str = Field(min_length=1, max_length=120)
+    id_categoria: int
+    id_material: int
+    peso_gramos: float = Field(gt=0)
+    quilates: float | None = Field(default=None, gt=0)
+    costo: float = Field(ge=0)
+    precio_venta: float = Field(ge=0)
+
+
+class OrdenCompraCrear(BaseModel):
+    id_proveedor: int
+    id_empleado: int
+    joyas: list[JoyaRecibida] = Field(min_length=1)
+
+
+class DetalleOrdenCompra(BaseModel):
+    id_joya: int
+    codigo: str
+    joya: str
+    costo: float
+
+
+class OrdenCompra(BaseModel):
+    id_orden: int
+    id_proveedor: int
+    proveedor: str
+    id_empleado: int
+    empleado: str
+    fecha: date
+    total: float
+
+
+class OrdenCompraDetallada(OrdenCompra):
+    detalle: list[DetalleOrdenCompra]

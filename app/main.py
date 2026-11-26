@@ -15,6 +15,7 @@ from app.routers import empleados
 from app.routers import joyas
 from app.routers import reportes
 from app.routers import ventas
+from app.routers import ordenes_compra
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -39,6 +40,7 @@ app.include_router(empleados.router)
 app.include_router(joyas.router)
 app.include_router(reportes.router)
 app.include_router(ventas.router)
+app.include_router(ordenes_compra.router)
 
 @app.get("/salud", tags=["Sistema"])
 def salud():
