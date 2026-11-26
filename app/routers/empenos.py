@@ -79,3 +79,45 @@ def registrar_empeno(datos: schemas.EmpenoCrear):
              datos.tasa_interes, datos.fecha_vencimiento),
         ).fetchone()["id_empeno"]
         return _empeno(conn, id_empeno)
+
+
+@router.post("/{id_empeno}/saldar", response_model=schemas.Empeno)
+def saldar_empeno(id_empeno: int):
+    """Funcionalidad 4: saldar un empeño (transacción atómica).
+
+    Valor a pagar = capital + capital * tasa mensual * meses transcurridos,
+    donde meses = días / 30 (proporcional) con un mínimo de 1 mes.
+    Cierra el empeño y marca la joya como DEVUELTA al cliente."""
+    with db.pool.connection() as conn:
+        e = conn.execute(
+            "SELECT id_joya, monto_prestamo, tasa_interes, estado, "
+            "(CURRENT_DATE - fecha_inicio) AS dias "
+            "FROM empeno WHERE id_empeno = %s FOR UPDATE",
+            (id_empeno,),
+        ).fetchone()
+        if e is None:
+            raise HTTPException(status_code=404, detail="Empeño no encontrado")
+        if e["estado"] != "ACTIVO":
+            raise HTTPException(status_code=409, detail=f"El empeño ya está {e['estado']}")
+
+        meses = max(Decimal(1), Decimal(e["dias"]) / Decimal(30))
+        interes = e["monto_prestamo"] * e["tasa_interes"] / 100 * meses
+        a_pagar = (e["monto_prestamo"] + interes).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+
+        conn.execute(
+            "UPDATE empeno SET estado = 'SALDADO', fecha_cierre = CURRENT_DATE, "
+            "monto_pagado = %s WHERE id_empeno = %s",
+            (a_pagar, id_empeno),
+        )
+        devuelta = conn.execute(
+            "UPDATE joya SET estado = 'DEVUELTA' WHERE id_joya = %s AND estado = 'EMPENADA'",
+            (e["id_joya"],),
+        )
+        if devuelta.rowcount == 0:
+            raise HTTPException(
+                status_code=409,
+                detail="La joya del empeño no está en estado EMPENADA; operación cancelada",
+            )
+        return _empeno(conn, id_empeno)
