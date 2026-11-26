@@ -193,7 +193,45 @@ class OrdenCompra(BaseModel):
     empleado: str
     fecha: date
     total: float
-
-
 class OrdenCompraDetallada(OrdenCompra):
     detalle: list[DetalleOrdenCompra]
+
+# ------------------------------------------------------------------- Empeños
+EstadoEmpeno = Literal["ACTIVO", "SALDADO", "VENCIDO"]
+
+
+class JoyaEmpenada(BaseModel):
+    codigo: str = Field(min_length=1, max_length=30)
+    nombre: str = Field(min_length=1, max_length=120)
+    id_categoria: int
+    id_material: int
+    peso_gramos: float = Field(gt=0)
+    quilates: float | None = Field(default=None, gt=0)
+    precio_venta: float = Field(gt=0)  # avalúo: lo que valdría si la tienda la vende
+
+
+class EmpenoCrear(BaseModel):
+    id_cliente: int
+    id_empleado: int
+    joya: JoyaEmpenada
+    monto_prestamo: float = Field(gt=0)
+    tasa_interes: float = Field(default=5.0, ge=0, le=100)  # % mensual
+    fecha_vencimiento: date
+
+
+class Empeno(BaseModel):
+    id_empeno: int
+    id_cliente: int
+    cliente: str
+    id_joya: int
+    codigo_joya: str
+    joya: str
+    id_empleado: int
+    empleado: str
+    monto_prestamo: float
+    tasa_interes: float
+    fecha_inicio: date
+    fecha_vencimiento: date
+    estado: str
+    fecha_cierre: date | None
+    monto_pagado: float | None
