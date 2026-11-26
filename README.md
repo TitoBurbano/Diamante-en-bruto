@@ -227,3 +227,12 @@ Cada entidad tiene los 5 endpoints: lista, detalle, creación, actualización y 
 
 Los errores de negocio (joya no disponible, empeño ya cerrado, etc.) se devuelven con
 código HTTP 409 y un mensaje claro, que la interfaz muestra al usuario.
+
+
+### Reglas de cálculo y códigos de respuesta
+- **Descuento VIP:** 10 % sobre el subtotal de la venta.
+- **Préstamo máximo:** 60 % del precio de venta (avalúo) de la joya empeñada.
+- **Valor para saldar un empeño:** capital + capital × tasa mensual × meses, donde meses = días transcurridos / 30, con un mínimo de 1 mes.
+- **Vencer un empeño:** solo si está `ACTIVO` y su fecha de vencimiento es anterior a hoy.
+- **Códigos de respuesta:** 201 al crear, 200 al ejecutar una acción, 404 si el registro no existe, 409 si una regla de negocio lo impide (joya no disponible, empeño ya cerrado, préstamo sobre el máximo) y 422 si los datos son inválidos.
+- **Transacciones:** cada funcionalidad es atómica. Si algo falla a mitad de camino, no queda ningún cambio guardado.
