@@ -408,6 +408,108 @@ async function vistaVentas() {
 registrar("vender", "Nueva venta", vistaVender);
 registrar("ventas", "Ventas", vistaVentas);
 
+/* ===================== Empeños ===================== */
+async function vistaEmpenos() {
+  const [clientes, empleados, categorias, materiales] = await Promise.all([
+    api("GET", "/clientes"), api("GET", "/empleados"), api("GET", "/categorias"), api("GET", "/materiales"),
+  ]);
+  let filtro = "";
+
+  vista.innerHTML = `
+    <h2>Empeños</h2>
+    <details>
+      <summary>Registrar nuevo empeño</summary>
+      <form id="form" class="form">
+        <div class="campos">
+          <label>Cliente *<select name="cliente" required>${opcionesHtml(clientes, "id_cliente", "nombre")}</select></label>
+          <label>Empleado *<select name="empleado" required>${opcionesHtml(empleados, "id_empleado", (e) => e.nombre + (e.activo ? "" : " (inactivo)"))}</select></label>
+          <label>Código de la joya *<input name="codigo" type="text" required></label>
+          <label>Nombre de la joya *<input name="nombre" type="text" required></label>
+          <label>Categoría *<select name="categoria" required>${opcionesHtml(categorias, "id_categoria", "nombre")}</select></label>
+          <label>Material *<select name="material" required>${opcionesHtml(materiales, "id_material", (m) => `${m.nombre} ${m.pureza}`)}</select></label>
+          <label>Peso (g) *<input name="peso" type="number" step="any" min="0" required></label>
+          <label>Quilates<input name="quilates" type="number" step="any" min="0"></label>
+          <label>Avalúo (precio de venta) *<input name="avaluo" type="number" step="any" min="0" required></label>
+          <label>Monto del préstamo * (máx. 60 % del avalúo)<input name="monto" type="number" step="any" min="0" required></label>
+          <label>Tasa mensual (%) *<input name="tasa" type="number" step="any" min="0" value="5" required></label>
+          <label>Vence el *<input name="vence" type="date" required></label>
+        </div>
+        <div class="botones"><button type="submit" class="primario">Registrar empeño</button></div>
+      </form>
+    </details>
+    <label class="filtro">Estado:
+      <select id="filtro">
+        <option value="">Todos</option><option>ACTIVO</option><option>SALDADO</option><option>VENCIDO</option>
+      </select>
+    </label>
+    <div id="lista"></div>`;
+
+  async function pintarLista() {
+    const filas = await api("GET", "/empenos" + (filtro ? `?estado=${filtro}` : ""));
+    $("#lista").innerHTML = tabla([
+      ["ID", (f) => f.id_empeno],
+      ["Cliente", (f) => f.cliente],
+      ["Joya", (f) => `${f.codigo_joya} · ${f.joya}`],
+      ["Préstamo", (f) => dinero(f.monto_prestamo)],
+      ["Tasa %", (f) => f.tasa_interes],
+      ["Inicio", (f) => f.fecha_inicio],
+      ["Vence", (f) => f.fecha_vencimiento],
+      ["Estado", (f) => f.estado],
+      ["Pagado", (f) => (f.monto_pagado == null ? "—" : dinero(f.monto_pagado))],
+    ], filas, (f) => f.estado === "ACTIVO"
+      ? btn("saldar", f.id_empeno, "Saldar") + btn("vencer", f.id_empeno, "Marcar vencido", "peligro")
+      : "");
+  }
+
+  async function ejecutar(ruta, id, textoOk) {
+    try {
+      const e = await api("POST", `/empenos/${id}/${ruta}`);
+      avisar(textoOk(e), "ok");
+      await pintarLista();
+    } catch (err) {
+      avisar(err.message, "error");
+    }
+  }
+
+  acciones = {
+    saldar: (id) => confirm("¿Saldar este empeño?") &&
+      ejecutar("saldar", id, (e) => `Empeño #${id} saldado. Total pagado: ${dinero(e.monto_pagado)}.`),
+    vencer: (id) => confirm("¿Marcar este empeño como vencido?") &&
+      ejecutar("vencer", id, () => `Empeño #${id} marcado como vencido; la joya quedó disponible para la venta.`),
+  };
+
+  $("#filtro").addEventListener("change", (e) => { filtro = e.target.value; pintarLista().catch((x) => avisar(x.message, "error")); });
+  $("#form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const f = ev.target.elements;
+    try {
+      const e = await api("POST", "/empenos", {
+        id_cliente: Number(f.cliente.value),
+        id_empleado: Number(f.empleado.value),
+        joya: {
+          codigo: f.codigo.value.trim(),
+          nombre: f.nombre.value.trim(),
+          id_categoria: Number(f.categoria.value),
+          id_material: Number(f.material.value),
+          peso_gramos: Number(f.peso.value),
+          quilates: f.quilates.value === "" ? null : Number(f.quilates.value),
+          precio_venta: Number(f.avaluo.value),
+        },
+        monto_prestamo: Number(f.monto.value),
+        tasa_interes: Number(f.tasa.value),
+        fecha_vencimiento: f.vence.value,
+      });
+      avisar(`Empeño #${e.id_empeno} registrado. Préstamo: ${dinero(e.monto_prestamo)}.`, "ok");
+      ev.target.reset();
+      await pintarLista();
+    } catch (err) {
+      avisar(err.message, "error");
+    }
+  });
+  await pintarLista();
+}
+
+registrar("empenos", "Empeños", vistaEmpenos);
 // ===== ARRANQUE (agrega las secciones nuevas ARRIBA de esta línea) =====
 if (MENU.length) {
   $("#menu").innerHTML = MENU.map(([k, t]) => `<button data-vista="${k}">${t}</button>`).join("");
