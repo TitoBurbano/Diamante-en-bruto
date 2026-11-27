@@ -51,12 +51,26 @@ Tito Alejandro Burbano Plazas - 20231020169
 6. Abrir en el navegador:
    - Interfaz web: http://localhost:8000/
    - Documentación interactiva de la API (Swagger): http://localhost:8000/docs
+## Interfaz web
+Con la API en marcha, abre http://localhost:8000/. La interfaz solo consume la API
+(nunca accede a la base de datos directamente) y tiene estas secciones:
+
+| Sección | Qué permite |
+|---|---|
+| Joyas, Clientes, Proveedores, Categorías, Empleados | CRUD completo: listar, crear, editar y eliminar |
+| Nueva venta | Registrar una venta (funcionalidad 1): elegir cliente, empleado y joyas |
+| Ventas | Ver el historial y el detalle de cada venta, y anularla (funcionalidad 5) |
+| Empeños | Registrar un empeño (3), saldarlo (4) o marcarlo como vencido (6) |
+| Reportes | Inventario disponible, empeños activos, joyas sobre el promedio y clientes sin compras |
+
+Cuando la API rechaza una operación (por ejemplo, una joya ya vendida), la interfaz
+muestra en un aviso rojo el mensaje exacto que devolvió la API.
 
 ## Estructura del repositorio
 ```
 sql/        Scripts: 01_tablas.sql, 02_vistas.sql, 03_datos.sql
 app/        Código de la API (main.py, db.py, schemas.py, routers/)
-static/     Interfaz web
+static/     Interfaz web (index.html, style.css, app.js)
 ```
 
 ## Diagrama ER
