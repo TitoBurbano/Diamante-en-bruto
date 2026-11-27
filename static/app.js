@@ -510,7 +510,35 @@ async function vistaEmpenos() {
 }
 
 registrar("empenos", "Empeños", vistaEmpenos);
-// ===== ARRANQUE (agrega las secciones nuevas ARRIBA de esta línea) =====
+
+/* ===================== Reportes (vistas y subconsultas) ===================== */
+const REPORTES = [
+  ["Inventario disponible", "/reportes/inventario"],
+  ["Empeños activos", "/reportes/empenos-activos"],
+  ["Joyas sobre el precio promedio", "/reportes/joyas-sobre-promedio"],
+  ["Clientes sin compras", "/reportes/clientes-sin-compras"],
+];
+
+function vistaReportes() {
+  vista.innerHTML = `
+    <h2>Reportes</h2>
+    <div class="botones">${REPORTES.map(([t], i) => btn("reporte", i, t)).join("")}</div>
+    <div id="resultado" style="margin-top:16px"></div>`;
+  acciones = {
+    reporte: async (i) => {
+      const [titulo, ruta] = REPORTES[i];
+      try {
+        const filas = await api("GET", ruta);
+        $("#resultado").innerHTML = `<h3>${titulo} (${filas.length})</h3>` + tablaAuto(filas);
+      } catch (e) {
+        avisar(e.message, "error");
+      }
+    },
+  };
+}
+
+registrar("reportes", "Reportes", vistaReportes);
+// ===== ARRANQUE =====
 if (MENU.length) {
   $("#menu").innerHTML = MENU.map(([k, t]) => `<button data-vista="${k}">${t}</button>`).join("");
   $("#menu").addEventListener("click", (e) => {
